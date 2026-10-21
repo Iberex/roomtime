@@ -1,0 +1,19 @@
+{
+  "name": "draaideur",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "vite build && cd dist && touch .nojekyll && git init -q -b gh-pages && git add -A && git commit -q -m deploy && git push -q -f https://github.com/Iberex/draaideur.git gh-pages && rm -rf .git"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.21.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.3"
+  }
+}

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Draaideur</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="bg90" aria-hidden="true"></div>
+  <button id="tv-zoom" class="eye" type="button" aria-label="Inzoomen op de tv" aria-pressed="false">
+    <svg class="open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+    <svg class="shut" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></svg>
+  </button>
+  <div id="radio-label" aria-live="polite"></div>
+  <button id="decade-prev" class="decade-arrow" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    <span></span>
+  </button>
+  <button id="decade-next" class="decade-arrow" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+    <span></span>
+  </button>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bake jaren '90</title>
+<!-- Hulppagina voor tijdens het ontwikkelen: hoe ver staat de bake van de jaren '90 (blender/build_room90.py)?
+     blender/bake_status.py schrijft bake-status.json; deze pagina leest die elke paar seconden. -->
+<style>
+  :root { --bg: #f4f1ea; --card: #fffdf8; --ink: #2a2622; --muted: #7a7166; --line: #e3ddd2; --accent: #00a8a8; --done: #2f9e6e; --warn: #c0392b; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #16181d; --card: #1f232a; --ink: #ece8e1; --muted: #9a958c; --line: #30353d; --accent: #2cc7c7; --done: #4cc38a; --warn: #ff6b5b; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 40px 16px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .big { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .pct { font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .eta { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+  .eta b { color: var(--ink); font-size: 18px; }
+  .bar { height: 12px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width 0.8s ease; }
+  ol { list-style: none; padding: 0; margin: 20px 0 0; }
+  li { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+  li .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); }
+  li.done .dot { background: var(--done); border-color: var(--done); }
+  li.now .dot { border-color: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+  li .t { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+  li.todo { color: var(--muted); }
+  @keyframes pulse { 50% { background: var(--accent); } }
+  .msg { margin-top: 16px; padding: 12px 14px; border-radius: 10px; background: var(--line); }
+  .msg.err { color: var(--warn); }
+  .msg.ok { color: var(--done); }
+  footer { color: var(--muted); font-size: 13px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Bake van de jaren '90</h1>
+  <p class="sub">Lightmaps en export uit Blender (blender/build_room90.py)</p>
+  <div class="card">
+    <div class="big">
+      <div class="pct" id="pct">–</div>
+      <div class="eta" id="eta">bezig met laden…</div>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+    <ol id="stages"></ol>
+    <div id="msg"></div>
+  </div>
+  <footer>Cycles toont geen voortgang tijdens het bakken: de fases komen uit de log, de duur van de lopende fase is een
+    schatting uit eerdere bakes. Ververst elke 3 seconden.</footer>
+</main>
+<script>
+const fmt = (t) => new Date(t * 1000).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
+const dur = (s) => { s = Math.max(0, Math.round(s / 60)); return s < 60 ? `${s} min` : `${Math.floor(s / 60)} u ${s % 60} min`; };
+async function tick() {
+  let st;
+  try { st = await (await fetch(`bake-status.json?${Date.now()}`)).json(); }
+  catch { document.getElementById('eta').textContent = 'Geen status gevonden: draait blender/bake_status.py?'; return; }
+  const now = Date.now() / 1000;
+  const total = st.stages.reduce((s, x) => s + x.minutes, 0);
+  let doneMin = 0, left = 0, seenNow = false;
+  const items = st.stages.map((x) => {
+    if (x.done) { doneMin += x.minutes; return { ...x, state: 'done', text: x.endedAt ? `klaar om ${fmt(x.endedAt)}` : 'klaar' }; }
+    if (!seenNow && st.running) {
+      seenNow = true;
+      const ran = (now - (x.startedAt ?? now)) / 60;
+      const frac = Math.min(0.95, ran / x.minutes);
+      doneMin += x.minutes * frac;
+      left += Math.max(1, x.minutes - ran);
+      return { ...x, state: 'now', text: `bezig, ${dur(ran * 60)} (± ${x.minutes} min)` };
+    }
+    left += x.minutes;
+    return { ...x, state: 'todo', text: `± ${x.minutes} min` };
+  });
+  const all = st.stages.every((x) => x.done);
+  const pct = all ? 100 : Math.floor((doneMin / total) * 100);
+  document.getElementById('pct').textContent = `${pct}%`;
+  document.getElementById('bar').style.width = `${pct}%`;
+  document.getElementById('eta').innerHTML = all ? '<b>klaar</b>'
+    : st.failed ? '<b>gestopt</b>'
+    : `loopt al ${dur(now - st.start)}<br><b>klaar rond ${fmt(now + left * 60)}</b>`;
+  document.getElementById('stages').innerHTML = items.map((x) =>
+    `<li class="${x.state}"><span class="dot"></span><span>${x.name}</span><span class="t">${x.text}</span></li>`).join('');
+  document.getElementById('msg').innerHTML = all
+    ? '<div class="msg ok">Klaar. Ververs de site (Cmd+Shift+R) om de nieuwe kamer te zien.</div>'
+    : st.failed ? '<div class="msg err">De bake is gestopt zonder te eindigen: kijk in blender/bake90.log.</div>' : '';
+}
+tick();
+setInterval(tick, 3000);
+</script>
+</body>
+</html>

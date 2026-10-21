@@ -1,0 +1,143 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+html { background: #1c0d07; } /* body blijft doorzichtig: de decennium-achtergronden liggen erachter */
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+body.ready canvas { opacity: 1; }
+
+/* oog-knoppen: inzoomplekken in elke kamer (tv, zetel, stopcontact, radio, raam) */
+.eye {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 236, 205, 0.35);
+  border-radius: 50%;
+  background: rgba(20, 14, 10, 0.55);
+  color: #f4e9d8;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 1.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+body.ready .eye { opacity: 1; }
+body.ready .eye:is(.hidden, .away) { opacity: 0; pointer-events: none; transition-duration: 0.3s; }
+.eye:hover { background: rgba(60, 40, 24, 0.75); border-color: rgba(255, 236, 205, 0.7); }
+.eye:focus-visible { outline: 2px solid #ffb36b; outline-offset: 2px; }
+.eye svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.eye .shut, .eye.zoomed .open { display: none; }
+.eye.zoomed .shut { display: block; }
+
+/* achtergrond per decennium: de lagen faden in elkaar over als de kamer draait */
+body::before, body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  transition: opacity 1.8s ease-in-out;
+}
+/* jaren '70: warm oranje licht achter het diorama dat wegzakt naar donker bruin */
+body::before {
+  background: radial-gradient(ellipse 70% 60% at 50% 42%, #d9792f 0%, #a8471f 38%, #5a2513 72%, #2a120a 100%);
+}
+/* jaren '80: neon roze en paars, zoals een synthwave-zonsondergang */
+body::after {
+  background: radial-gradient(ellipse 70% 60% at 50% 42%, #ff4f9a 0%, #b02fd6 36%, #4a1a8c 70%, #160a33 100%);
+  opacity: 0;
+}
+body[data-decade="1"]::after { opacity: 1; }
+/* jaren '90: turkoois en diep blauw-paars, zoals een screensaver uit Windows 95 */
+#bg90 {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 70% 60% at 50% 42%, #3fd6c8 0%, #1d8fa3 34%, #26397e 70%, #0c0f2e 100%);
+  opacity: 0;
+  transition: opacity 1.8s ease-in-out;
+}
+body[data-decade="2"] #bg90 { opacity: 1; }
+
+/* pijlen links en rechts: draaien naar het vorige / volgende decennium, in de stijl van de oogjes */
+.decade-arrow {
+  position: fixed;
+  top: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #f4e9d8;
+  cursor: pointer;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+#decade-prev { left: max(20px, env(safe-area-inset-left)); }
+#decade-next { right: max(20px, env(safe-area-inset-right)); }
+body.ready .decade-arrow { opacity: 1; }
+.decade-arrow svg {
+  box-sizing: border-box;
+  width: 46px;
+  height: 46px;
+  padding: 12px;
+  border: 1px solid rgba(255, 236, 205, 0.35);
+  border-radius: 50%;
+  background: rgba(20, 14, 10, 0.55);
+  backdrop-filter: blur(4px);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.decade-arrow span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(20, 14, 10, 0.45);
+  font: 600 12px/1.2 "Avenir Next", "Futura", "Century Gothic", system-ui, sans-serif;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.decade-arrow:hover svg { background: rgba(60, 40, 24, 0.75); border-color: rgba(255, 236, 205, 0.7); }
+#decade-prev:hover svg { transform: translateX(-2px); }
+#decade-next:hover svg { transform: translateX(2px); }
+.decade-arrow:focus-visible { outline: none; }
+.decade-arrow:focus-visible svg { outline: 2px solid #ffb36b; outline-offset: 2px; }
+body.ready .decade-arrow:disabled { opacity: 0.35; cursor: default; }
+body.ready .decade-arrow.none { opacity: 0; pointer-events: none; } /* begin of einde van de rij */
+
+/* label bij de radio: welke cassette er speelt, in de stijl van de oogjes */
+#radio-label {
+  position: fixed;
+  left: 0;
+  top: 0;
+  padding: 5px 11px;
+  border: 1px solid rgba(255, 236, 205, 0.35);
+  border-radius: 999px;
+  background: rgba(20, 14, 10, 0.6);
+  color: #f4e9d8;
+  font: 600 12px/1.2 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+#radio-label.on { opacity: 1; }
