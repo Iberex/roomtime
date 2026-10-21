@@ -1,8 +1,8 @@
-# Draaideur
+# Roomtime
 
 Drie woonkamers op één draaideur: de jaren '70, '80 en '90, elk een diorama dat ik in Blender heb gemodelleerd en gebakken, gerenderd in de browser met three.js en de **WebGPURenderer**. Draai de deur rond en je stapt een decennium verder. Op de tv's draait een Shadertoy-shader die ik naar WebGPU heb geport.
 
-**Online:** https://iberex.github.io/draaideur/ (een browser met WebGPU nodig, bv. Chrome of Edge)
+**Online:** https://iberex.github.io/roomtime/ (een browser met WebGPU nodig, bv. Chrome of Edge)
 
 ## Originele shader
 
